@@ -9,7 +9,7 @@ unit UChatGPTThread;
 
 interface
 uses
-  System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
+  System.Classes, System.SysUtils, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, UChatGPTSetting;
 
 const
@@ -106,6 +106,9 @@ type
 
 implementation
 
+uses
+  Net.HttpClient, Net.URLClient;
+
 constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
 begin
   inherited Create;
@@ -116,63 +119,74 @@ end;
 
 function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
 var
-  LvHttpClient: TIdHTTP;
-  LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+  LvHttpClient: THTTPClient;
   LvParamStream: TStringStream;
-
   LvRequestJSON: TRequestJSON;
   LvChatGPTResponse: TChatGPTResponse;
-
+  LvResponse: IHTTPResponse;
   LvResponseStream: TStringStream;
+  LvResult: string;
 begin
-  LvHttpClient := TIdHTTP.Create(nil);
-  if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
-  begin  
-    LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
-    LvHttpClient.ProxyParams.ProxyPort := FProxySetting.ProxyPort;
-    LvHttpClient.ProxyParams.ProxyUsername := FProxySetting.ProxyUsername;
-    LvHttpClient.ProxyParams.ProxyPassword := FProxySetting.ProxyPassword;
-  end;    
-  
-  LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-  LvChatGPTResponse := TChatGPTResponse.Create;
+  LvResult := 'No data';
+  LvHttpClient := THTTPClient.Create;
+  LvResponseStream := TStringStream.Create;
   LvRequestJSON := TRequestJSON.Create;
-
-  with LvRequestJSON do
-  begin
-    model := AModel;
-    prompt := APrompt;
-    max_tokens := AMaxToken;
-    temperature := Aemperature;
-  end;
-
+  LvChatGPTResponse := TChatGPTResponse.Create;
   try
-    LvHttpClient.IOHandler := LvSslIOHandler;
-    LvSslIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
-    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(True), TEncoding.UTF8);
-
-    LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer '+ FAccessToken);
-    LvHttpClient.Request.ContentType := 'application/json';
-    LvHttpClient.Request.AcceptEncoding := 'deflate, gzip;q=1.0, *;q=0.5';
-
-    try
-      LvResponseStream := TStringStream.Create;
-      LvHttpClient.Post(FUrl , LvParamStream, LvResponseStream);
-
-      if not LvResponseStream.DataString.IsEmpty then
-        Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).Choices[0].Text.Trim);
-    except on E: Exception do
-      Result := E.Message;
+    with LvRequestJSON do
+    begin
+      model := AModel;
+      prompt := APrompt;
+      max_tokens := AMaxToken;
+      temperature := Aemperature;
     end;
-  finally
-    LvResponseStream.Free;
-    LvRequestJSON.Free;
-    LvParamStream.Free;
-    LvChatGPTResponse.Free;
-    LvSslIOHandler.Free;
-    LvHttpClient.Free;
+
+    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(True), TEncoding.UTF8);
+    try
+      LvHttpClient.SecureProtocols := [THTTPSecureProtocol.SSL2, THTTPSecureProtocol.SSL3,
+              THTTPSecureProtocol.TLS1, THTTPSecureProtocol.TLS11, THTTPSecureProtocol.TLS12, THTTPSecureProtocol.TLS13];
+      LvHttpClient.ConnectionTimeout := 3000;
+      LvHttpClient.CustomHeaders['Authorization'] := 'Bearer ' + FAccessToken;
+      LvHttpClient.ContentType := 'application/json';
+      LvHttpClient.AcceptEncoding := 'deflate, gzip;q=1.0, *;q=0.5';
+
+      if (FProxySetting.Active) and (not LvHttpClient.ProxySettings.Host.IsEmpty) then
+      begin
+        LvHttpClient.ProxySettings := TProxySettings.Create( FProxySetting.ProxyHost,
+                            FProxySetting.ProxyPort, FProxySetting.ProxyUsername,
+                            FProxySetting.ProxyPassword);
+      end;
+      LvParamStream.Position := 0;
+      LvResponse := LvHttpClient.Post(FUrl, LvParamStream, LvResponseStream);
+
+      if LvResponse.StatusCode = 200 then
+      begin
+        LvResponseStream.Position := 0;
+        try
+          if not LvResponseStream.DataString.IsEmpty then
+            LvResult := UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).choices[0].Text.Trim);
+        except
+          on E: Exception do
+            LvResult := '1: ' + E.Message;
+        end;
+      end
+      else
+        LvResult := 'Error Code: ' + LvResponse.StatusText;
+    finally
+      LvParamStream.Free;
+    end;
+  except
+    on E: Exception do
+      LvResult := '2: '+ E.Message;
   end;
+  LvResponseStream.Free;
+  FreeAndNil(LvHttpClient);
+  LvRequestJSON.Free;
+  LvChatGPTResponse.Free;
+
+  Result := LvResult;
 end;
+
 
 { TChatGPTResponse }
 
