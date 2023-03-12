@@ -1,32 +1,38 @@
 object Fram_Question: TFram_Question
   Left = 0
   Top = 0
-  Width = 483
-  Height = 384
+  Width = 435
+  Height = 433
   TabOrder = 0
   object pgcMain: TPageControl
     Left = 0
     Top = 0
-    Width = 483
-    Height = 350
+    Width = 435
+    Height = 399
     ActivePage = tsChatGPT
     Align = alClient
+    MultiLine = True
     TabOrder = 0
     OnChange = pgcMainChange
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object pnlMain: TPanel
         Left = 0
         Top = 0
-        Width = 475
-        Height = 320
+        Width = 427
+        Height = 371
         Align = alClient
         ParentColor = True
         TabOrder = 0
+        ExplicitHeight = 369
         object pnlTop: TPanel
           Left = 1
           Top = 1
-          Width = 473
+          Width = 425
           Height = 44
           Align = alTop
           TabOrder = 0
@@ -65,15 +71,16 @@ object Fram_Question: TFram_Question
         object pnlCenter: TPanel
           Left = 1
           Top = 45
-          Width = 473
-          Height = 274
+          Width = 425
+          Height = 325
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
+          ExplicitHeight = 323
           object splitter: TSplitter
             Left = 0
             Top = 114
-            Width = 473
+            Width = 425
             Height = 3
             Cursor = crVSplit
             Align = alTop
@@ -84,12 +91,13 @@ object Fram_Question: TFram_Question
           object pnlAnswer: TPanel
             Left = 0
             Top = 117
-            Width = 473
-            Height = 157
+            Width = 425
+            Height = 208
             Align = alClient
             TabOrder = 0
+            ExplicitHeight = 206
             object Lbl_Answer: TLabel
-              Left = 15
+              Left = 7
               Top = 5
               Width = 45
               Height = 15
@@ -105,8 +113,8 @@ object Fram_Question: TFram_Question
               AlignWithMargins = True
               Left = 4
               Top = 21
-              Width = 465
-              Height = 132
+              Width = 417
+              Height = 181
               Margins.Top = 20
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
@@ -115,7 +123,6 @@ object Fram_Question: TFram_Question
               Font.Name = 'Consolas'
               Font.Style = []
               ParentFont = False
-              PopupMenu = pmMemo
               ReadOnly = True
               ScrollBars = ssVertical
               TabOrder = 0
@@ -124,12 +131,12 @@ object Fram_Question: TFram_Question
           object pnlQuestion: TPanel
             Left = 0
             Top = 0
-            Width = 473
+            Width = 425
             Height = 114
             Align = alTop
             TabOrder = 1
             DesignSize = (
-              473
+              425
               114)
             object Lbl_Question: TLabel
               Left = 7
@@ -147,7 +154,7 @@ object Fram_Question: TFram_Question
             object mmoQuestion: TMemo
               Left = 11
               Top = 20
-              Width = 450
+              Width = 402
               Height = 89
               Hint = 'Type a question and press Ctrl + Enter'
               Anchors = [akLeft, akTop, akRight, akBottom]
@@ -172,10 +179,14 @@ object Fram_Question: TFram_Question
     object tsClassView: TTabSheet
       Caption = 'Class View'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object splClassView: TSplitter
         Left = 0
         Top = 137
-        Width = 475
+        Width = 427
         Height = 3
         Cursor = crVSplit
         Align = alTop
@@ -185,7 +196,7 @@ object Fram_Question: TFram_Question
       object pnlClasses: TPanel
         Left = 0
         Top = 0
-        Width = 475
+        Width = 427
         Height = 137
         Align = alTop
         TabOrder = 0
@@ -193,16 +204,26 @@ object Fram_Question: TFram_Question
       object pnlPredefinedCmdAnswer: TPanel
         Left = 0
         Top = 140
-        Width = 475
-        Height = 180
+        Width = 427
+        Height = 229
         Align = alClient
         TabOrder = 1
-        object mmoPredefinedCmdAnswer: TMemo
+        object splClassViewResult: TSplitter
+          Left = 238
+          Top = 1
+          Height = 227
+          Align = alRight
+          Visible = False
+          ExplicitLeft = 216
+          ExplicitTop = 64
+          ExplicitHeight = 100
+        end
+        object mmoClassViewDetail: TMemo
           AlignWithMargins = True
           Left = 4
           Top = 4
-          Width = 467
-          Height = 172
+          Width = 231
+          Height = 221
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -210,7 +231,127 @@ object Fram_Question: TFram_Question
           Font.Name = 'Consolas'
           Font.Style = []
           ParentFont = False
+          ReadOnly = True
           ScrollBars = ssVertical
+          TabOrder = 0
+          OnDblClick = mmoClassViewDetailDblClick
+        end
+        object mmoClassViewResult: TMemo
+          Left = 241
+          Top = 1
+          Width = 185
+          Height = 227
+          Align = alRight
+          ReadOnly = True
+          TabOrder = 1
+          Visible = False
+          OnDblClick = mmoClassViewResultDblClick
+        end
+      end
+    end
+    object tsHistory: TTabSheet
+      Caption = 'History'
+      ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+      object splHistory: TSplitter
+        Left = 0
+        Top = 185
+        Width = 427
+        Height = 3
+        Cursor = crVSplit
+        Align = alTop
+        ExplicitWidth = 184
+      end
+      object pnlHistoryTop: TPanel
+        Left = 0
+        Top = 0
+        Width = 427
+        Height = 185
+        Align = alTop
+        PopupMenu = pmGrdHistory
+        TabOrder = 0
+        object pnlSearchHistory: TPanel
+          Left = 1
+          Top = 1
+          Width = 425
+          Height = 40
+          Align = alTop
+          TabOrder = 0
+          Visible = False
+          DesignSize = (
+            425
+            40)
+          object Chk_CaseSensitive: TCheckBox
+            Left = 330
+            Top = 1
+            Width = 94
+            Height = 38
+            Align = alRight
+            Anchors = [akTop, akRight]
+            Caption = 'Case Sensitive'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 0
+            OnClick = Chk_CaseSensitiveClick
+          end
+          object Edt_Search: TEdit
+            AlignWithMargins = True
+            Left = 7
+            Top = 8
+            Width = 202
+            Height = 23
+            Anchors = [akLeft, akTop, akRight]
+            TabOrder = 1
+            OnChange = Edt_SearchChange
+          end
+          object Chk_FuzzyMatch: TCheckBox
+            Left = 245
+            Top = 1
+            Width = 85
+            Height = 38
+            Align = alRight
+            Anchors = [akTop, akRight]
+            Caption = 'Fuzzy Match'
+            Color = clLime
+            Ctl3D = True
+            DoubleBuffered = False
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentColor = False
+            ParentCtl3D = False
+            ParentDoubleBuffered = False
+            ParentFont = False
+            TabOrder = 2
+            OnClick = Chk_CaseSensitiveClick
+          end
+        end
+      end
+      object pnlHistoryBottom: TPanel
+        Left = 0
+        Top = 188
+        Width = 427
+        Height = 183
+        Align = alClient
+        TabOrder = 1
+        ExplicitHeight = 181
+        object mmoHistoryDetail: TMemo
+          Left = 1
+          Top = 1
+          Width = 425
+          Height = 179
+          Align = alClient
+          ReadOnly = True
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -218,19 +359,19 @@ object Fram_Question: TFram_Question
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 350
-    Width = 483
+    Top = 399
+    Width = 435
     Height = 34
     Align = alBottom
     TabOrder = 1
     DesignSize = (
-      483
+      435
       34)
     object chk_AutoCopy: TCheckBox
       AlignWithMargins = True
-      Left = 321
+      Left = 294
       Top = 6
-      Width = 146
+      Width = 132
       Height = 20
       Margins.Right = 4
       Anchors = [akRight, akBottom]
@@ -241,8 +382,8 @@ object Fram_Question: TFram_Question
     end
   end
   object pmMemo: TPopupMenu
-    Left = 248
-    Top = 264
+    Left = 56
+    Top = 232
     object CopytoClipboard1: TMenuItem
       Caption = 'Copy to Clipboard'
       OnClick = CopytoClipboard1Click
@@ -250,74 +391,62 @@ object Fram_Question: TFram_Question
   end
   object pmClassOperations: TPopupMenu
     OnPopup = pmClassOperationsPopup
-    Left = 336
-    Top = 264
-    object CreateTestUnit1: TMenuItem
-      Caption = 'Create Test Unit'
-      OnClick = CreateTestUnit1Click
+    Left = 56
+    Top = 304
+  end
+  object FDConnection: TFDConnection
+    LoginPrompt = False
+    Left = 152
+    Top = 232
+  end
+  object DSHistory: TDataSource
+    DataSet = FDQryHistory
+    Left = 240
+    Top = 304
+  end
+  object FDQryHistory: TFDQuery
+    AfterScroll = FDQryHistoryAfterScroll
+    OnFilterRecord = FDQryHistoryFilterRecord
+    Connection = FDConnection
+    SQL.Strings = (
+      'Select * from TbHistory')
+    Left = 239
+    Top = 231
+    object FDQryHistoryHID: TFDAutoIncField
+      FieldName = 'HID'
+      Origin = 'HID'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = True
     end
-    object ConverttoSingletone1: TMenuItem
-      Caption = 'Convert to Singleton'
-      OnClick = ConverttoSingletone1Click
+    object FDQryHistoryQuestion: TWideMemoField
+      Alignment = taCenter
+      FieldName = 'Question'
+      Origin = 'Question'
+      OnGetText = FDQryHistoryQuestionGetText
+      BlobType = ftWideMemo
     end
-    object Findpossibleproblems1: TMenuItem
-      Caption = 'Find possible problems'
-      OnClick = Findpossibleproblems1Click
+    object FDQryHistoryAnswer: TWideMemoField
+      FieldName = 'Answer'
+      Origin = 'Answer'
+      OnGetText = FDQryHistoryQuestionGetText
+      BlobType = ftWideMemo
     end
-    object ImproveNaming1: TMenuItem
-      Caption = 'Improve Naming'
-      OnClick = ImproveNaming1Click
+    object FDQryHistoryDate: TLargeintField
+      FieldName = 'Date'
+      OnGetText = FDQryHistoryDateGetText
     end
-    object Rewriteinmoderncodingstyle1: TMenuItem
-      Caption = 'Rewrite in modern coding style'
-      OnClick = Rewriteinmoderncodingstyle1Click
+  end
+  object pmGrdHistory: TPopupMenu
+    Left = 160
+    Top = 304
+    object ReloadHistory1: TMenuItem
+      Caption = 'Reload History'
+      OnClick = ReloadHistory1Click
     end
-    object CrreateInterface1: TMenuItem
-      Caption = 'Crreate Interface'
-      OnClick = CrreateInterface1Click
-    end
-    object ConverttoGenericType1: TMenuItem
-      Caption = 'Convert to Generic Type'
-      OnClick = ConverttoGenericType1Click
-    end
-    object Convertto1: TMenuItem
-      Caption = 'Convert to'
-      object C1: TMenuItem
-        Caption = 'C#'
-        OnClick = C1Click
-      end
-      object Java1: TMenuItem
-        Caption = 'Java'
-        OnClick = Java1Click
-      end
-      object Python1: TMenuItem
-        Caption = 'Python'
-        OnClick = Python1Click
-      end
-      object Javascript1: TMenuItem
-        Caption = 'Javascript'
-        OnClick = Javascript1Click
-      end
-      object C3: TMenuItem
-        Caption = 'C'
-        OnClick = C3Click
-      end
-      object C2: TMenuItem
-        Caption = 'C++'
-        OnClick = C2Click
-      end
-      object Go1: TMenuItem
-        Caption = 'Go'
-        OnClick = Go1Click
-      end
-      object Rust1: TMenuItem
-        Caption = 'Rust'
-        OnClick = Rust1Click
-      end
-    end
-    object CustomCommand1: TMenuItem
-      Caption = 'Custom Command'
-      OnClick = CustomCommand1Click
+    object Search1: TMenuItem
+      AutoCheck = True
+      Caption = 'Search'
+      OnClick = Search1Click
     end
   end
 end

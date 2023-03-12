@@ -34,7 +34,7 @@ type
     FSetting: TSingletonSettingObj;
     
     procedure AskMenuClick(Sender: TObject);
-    procedure ChatGPTDockableClick(Sender: TObject);
+    procedure ChatGPTDockableMenuClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
     procedure AskSubmenuHiddenOnClick(Sender: TObject);
     procedure RenewUI(AForm: TCustomForm);
@@ -65,10 +65,10 @@ type
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
   private
     FMenuHook: TCpMenuHook;
-    FClassList: TStrings;
     class function GetQuestion(AStr: string): string;
     class function CreateMsg: string;
     class procedure FormatSource;
+    function GetCurrentUnitPath: string;
   public
     constructor Create;
     destructor Destroy;override;
@@ -95,9 +95,10 @@ type
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-  private
-    FClassList: TClassList;
-    Fram_Question1: TFram_Question;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+   private
+    FDockFormClassListObj: TClassList;
+    Fram_Question: TFram_Question;
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
@@ -147,7 +148,7 @@ begin
 end;
 
 { TChatGptMenuWizard }
-procedure TChatGptMenuWizard.ChatGPTDockableClick(Sender: TObject);
+procedure TChatGptMenuWizard.ChatGPTDockableMenuClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
 begin
@@ -164,7 +165,6 @@ begin
 
   TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
   RenewUI(FChatGPTDockForm);
-  FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
   FChatGPTDockForm.Show;
 end;
 
@@ -183,12 +183,20 @@ begin
     Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
     Frm_Setting.chk_CodeFormatter.Checked := FSetting.CodeFormatter;
     Frm_Setting.chk_Rtl.Checked := FSetting.RighToLeft;
+    Frm_Setting.chk_History.Checked := FSetting.HistoryEnabled;
+    Frm_Setting.lbEdt_History.Text := FSetting.HistoryPath;
+    Frm_Setting.lbEdt_History.Enabled := FSetting.HistoryEnabled;
+    Frm_Setting.Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
+    Frm_Setting.ColorBox_Highlight.Selected := FSetting.HighlightColor;
+    Frm_Setting.chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
+    Frm_Setting.AddAllDefinedQuestions;
 
     Frm_Setting.ShowModal;
-    RenewUI(FChatGPTDockForm);
+    if Frm_Setting.HasChanges then
+      RenewUI(FChatGPTDockForm);
   finally
     Frm_Setting.Free;
-    FSetting.ReadRegistry;
+    FSetting.ReadRegistry; // In case something changed in setting that must reload.
   end;
 end;
 
@@ -228,7 +236,7 @@ begin
     FAskMenuDockable := TMenuItem.Create(nil);
     FAskMenuDockable.Name := 'Mnu_ChatGPTDockable';
     FAskMenuDockable.Caption := 'ChatGPT Dockabale';
-    FAskMenuDockable.OnClick := ChatGPTDockableClick;
+    FAskMenuDockable.OnClick := ChatGPTDockableMenuClick;
     FAskMenuDockable.ImageIndex := 1;
   end;
 
@@ -391,10 +399,12 @@ begin
     AForm.BiDiMode := bdLeftToRight;
 
   Cs.Enter;
-  if AForm.FindChildControl('Fram_Question1') <> nil then
-  with AForm.FindComponent('Fram_Question1') as TFram_Question do
+  if AForm.FindChildControl('Fram_Question') <> nil then
+  with AForm.FindComponent('Fram_Question') as TFram_Question do
   begin
+    Btn_Ask.Enabled := True;
     Align := alClient;
+    pgcMain.ActivePageIndex := 0;
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
       Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
@@ -505,7 +515,6 @@ constructor TEditNotifierHelper.Create;
 begin
   inherited Create;
   FMenuHook := TCpMenuHook.Create(nil);
-  FClassList := TStringList.Create;
 end;
 
 class function TEditNotifierHelper.CreateMsg: string;
@@ -525,7 +534,6 @@ end;
 destructor TEditNotifierHelper.Destroy;
 begin
   FMenuHook.Free;
-  FClassList.Free;
   inherited;
 end;
 
@@ -541,17 +549,35 @@ procedure TEditNotifierHelper.DockFormVisibleChanged(const EditWindow: INTAEditW
 begin
 end;
 
+function TEditNotifierHelper.GetCurrentUnitPath: string;
+var
+  ModuleServices: IOTAModuleServices;
+  CurrentModule: IOTAModule;
+  SourceModule: IOTASourceEditor;
+begin
+  Result := '';
+  ModuleServices := BorlandIDEServices as IOTAModuleServices;
+  CurrentModule := ModuleServices.CurrentModule;
+  Result := ExtractFileName(CurrentModule.CurrentEditor.FileName);
+end;
+
 procedure TEditNotifierHelper.EditorViewActivated(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
+var
+  LvCurrentUnitName: string;
 begin
   if not Assigned(FChatGPTSubMenu) then
     AddEditorContextMenu;
 
-  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question1.pgcMain.ActivePageIndex = 1) and
-    (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
-    begin
-      FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
-      TSingletonSettingObj.Instance.CurrentActiveView := EditView;
-    end;
+  LvCurrentUnitName := GetCurrentUnitPath;
+
+  Cs.Enter;
+  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question.pgcMain.ActivePageIndex = 1) and
+    (not LvCurrentUnitName.Equals(TSingletonSettingObj.Instance.CurrentActiveViewName)) then
+  begin
+    TSingletonSettingObj.Instance.CurrentActiveViewName := LvCurrentUnitName;
+    Cs.Leave;
+    FChatGPTDockForm.Fram_Question.ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+  end;
 end;
 
 procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
@@ -614,6 +640,7 @@ begin
   DeskSection := 'ChatGPTPlugin';
   AutoSave := True;
   SaveStateNecessary := True;
+  FDockFormClassListObj := TClassList.Create;
 
   with Self do
   begin
@@ -623,33 +650,46 @@ begin
     Position := poMainFormCenter;
   end;
 
-  Fram_Question1 := TFram_Question.Create(Self);
-  Fram_Question1.Name := 'Fram_Question1';
-  Fram_Question1.Parent := Self;
-  Fram_Question1.Align := alClient;
-  Fram_Question1.Show;
-  Fram_Question1.BringToFront;
-  Self.OnKeyDown := FormKeyDown;
-  Self.KeyPreview := True;
+  Fram_Question := TFram_Question.Create(Self);
+  with Fram_Question do
+  begin
+    Name := 'Fram_Question';
+    Parent := Self;
+    InitialFrame;
+    InitialClassViewMenueItems(FDockFormClassListObj);
+    Show;
+    BringToFront;
+  end;
 
-  FClassList := TClassList.Create;
+  with TSingletonSettingObj.Instance do
+  begin
+    if (not HistoryEnabled) and (not ShouldReloadHistory) and (FileExists(GetHistoryFullPath)) then
+      ShouldReloadHistory := True;
+  end;
+
+  Self.OnKeyDown := FormKeyDown;
+  Self.OnClose := FormClose;
+  Self.KeyPreview := True;
 end;
 
 destructor TChatGPTDockForm.Destroy;
 begin
   SaveStateNecessary := True;
-  FClassList.Free;
+  FDockFormClassListObj.Free;
   inherited;
   FChatGPTDockForm := nil;
+end;
+
+procedure TChatGPTDockForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Fram_Question.Edt_Search.Clear;
+  Fram_Question.TerminateThred;
 end;
 
 procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Ord(Key) = 27 then
-  begin
-    Fram_Question1.TerminateThred;
     Close;
-  end;
 end;
 
 initialization
