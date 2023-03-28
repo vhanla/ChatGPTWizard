@@ -6,23 +6,11 @@
 {                                                   }
 {***************************************************}
 unit UChatGPTThread;
-
 interface
 uses
-<<<<<<< HEAD
   System.Classes, System.SysUtils, Vcl.Dialogs,
-  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, UChatGPTSetting;
-
-const
-  WM_UPDATE_MESSAGE = WM_USER + 5874;
-  WM_PROGRESS_MESSAGE = WM_USER + 5875;
-  WM_Animated_MESSAGE = WM_USER + 5876;
-=======
-  System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
   UChatGPTSetting, UConsts;
->>>>>>> 0d2880bef98fd5aeb2d3aec4d2b456380fe96caf
-
 type
   TExecutorTrd = class(TThread)
   private
@@ -45,7 +33,16 @@ type
                        AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
     destructor Destroy; override;
   end;
-
+  TChatRequestJSON = class
+  private
+    FModel: string;
+    FMessages: ISuperArray;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property model: string read FModel write FModel;
+    property messages: ISuperArray read FMessages write FMessages;
+  end;
   TRequestJSON = class
   private
     FModel: string;
@@ -58,20 +55,26 @@ type
     property max_tokens: Integer read FMax_tokens write FMax_tokens;
     property temperature: Integer read FTemperature write FTemperature;
   end;
-
+  TGPTMessage = class
+  private
+    FContent: string;
+  published
+    property content: string read FContent write FContent;
+  end;
   TChoice = class
   private
     FText: string;
     FIndex: Integer;
     FLogProbs: string;
     FFinish_reason: string;
+    FMessage: TGPTMessage;
   published
     property text: string read FText write FText;
     property &index: Integer read FIndex write FIndex;
     property logprobs: string read FLogProbs write FLogProbs;
     property finish_reason: string read FFinish_reason write FFinish_reason;
+    property message: TGPTMessage read FMessage write FMessage;
   end;
-
   TUsage = class
   private
     FPrompt_Tokens: Integer;
@@ -82,7 +85,6 @@ type
     property completion_tokens: Integer read FCompletion_Tokens write FCompletion_Tokens;
     property total_tokens: Integer read FTotal_Tokens write FTotal_Tokens;
   end;
-
   TChatGPTResponse = class
   private
     FId: string;
@@ -102,7 +104,7 @@ type
     property choices: TObjectList<TChoice> read FChoices write FChoices;
     property usage: TUsage read FUsage write FUsage;
   end;
-  
+
   TOpenAIAPI = class
   private
     FAccessToken: string;
@@ -113,18 +115,13 @@ type
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
     function Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
   end;
-
 implementation
-
-<<<<<<< HEAD
 uses
   Net.HttpClient, Net.URLClient;
 
-constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
-=======
+
 { TOpenAIAPI }
 constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
->>>>>>> 0d2880bef98fd5aeb2d3aec4d2b456380fe96caf
 begin
   inherited Create;
   FAccessToken := AAccessToken;
@@ -132,54 +129,60 @@ begin
   FProxySetting := AProxySetting;
   FTimeOut := ATimeOut;
 end;
-
 function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
 var
   LvHttpClient: THTTPClient;
   LvParamStream: TStringStream;
   LvRequestJSON: TRequestJSON;
+  LvChatRequestJSON: TChatRequestJSON;
   LvChatGPTResponse: TChatGPTResponse;
   LvResponse: IHTTPResponse;
   LvResponseStream: TStringStream;
   LvResult: string;
+  LvMessage: ISuperObject;
+  ChatCompletion: Boolean;
 begin
-<<<<<<< HEAD
+  ChatCompletion := False; if AModel.Contains('gpt-') then ChatCompletion := True;
   LvResult := 'No data';
   LvHttpClient := THTTPClient.Create;
   LvResponseStream := TStringStream.Create;
-=======
-  LvHttpClient := TIdHTTP.Create(nil);
-  LvHttpClient.ConnectTimeout := FTimeOut * 1000;
-  LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
-
-  if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
-  begin  
-    LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
-    LvHttpClient.ProxyParams.ProxyPort := FProxySetting.ProxyPort;
-    LvHttpClient.ProxyParams.ProxyUsername := FProxySetting.ProxyUsername;
-    LvHttpClient.ProxyParams.ProxyPassword := FProxySetting.ProxyPassword;
-  end;    
-  
-  LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-  LvChatGPTResponse := TChatGPTResponse.Create;
->>>>>>> 0d2880bef98fd5aeb2d3aec4d2b456380fe96caf
   LvRequestJSON := TRequestJSON.Create;
+  LvChatRequestJSON := TChatRequestJSON.Create;
   LvChatGPTResponse := TChatGPTResponse.Create;
   try
-    with LvRequestJSON do
+    if ChatCompletion then
     begin
-      model := AModel;
-      prompt := APrompt;
-      max_tokens := AMaxToken;
-      temperature := Aemperature;
+      with LvChatRequestJSON do
+      begin
+        model := AModel;
+        LvMessage := SO;
+        LvMessage.S['role'] := 'user';
+        LvMessage.S['content'] := APrompt;
+        messages.Add(LvMessage);
+      end;
+    end
+    else
+    begin
+      with LvRequestJSON do
+      begin
+        model := AModel;
+        prompt := APrompt;
+        max_tokens := AMaxToken;
+        temperature := Aemperature;
+      end;
     end;
 
+    if ChatCompletion then
+     LvParamStream := TStringStream.Create(LvChatRequestJSON.AsJSON(True), TEncoding.UTF8)
+    else
     LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(True), TEncoding.UTF8);
     try
       LvHttpClient.SecureProtocols := [THTTPSecureProtocol.SSL2, THTTPSecureProtocol.SSL3,
               THTTPSecureProtocol.TLS1, THTTPSecureProtocol.TLS11, THTTPSecureProtocol.TLS12, THTTPSecureProtocol.TLS13];
-      LvHttpClient.ConnectionTimeout := 3000;
+      LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
+      LvHttpClient.ResponseTimeout := (FTimeOut * 1000) * 2;
       LvHttpClient.CustomHeaders['Authorization'] := 'Bearer ' + FAccessToken;
+      LvHttpClient.SetUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/111.0"');
       LvHttpClient.ContentType := 'application/json';
       LvHttpClient.AcceptEncoding := 'deflate, gzip;q=1.0, *;q=0.5';
 
@@ -190,21 +193,28 @@ begin
                             FProxySetting.ProxyPassword);
       end;
       LvParamStream.Position := 0;
+//      ShowMessage(LvParamStream.DataString);
       LvResponse := LvHttpClient.Post(FUrl, LvParamStream, LvResponseStream);
 
+//      ShowMessage(LvResponseStream.DataString);
       if LvResponse.StatusCode = 200 then
       begin
         LvResponseStream.Position := 0;
         try
           if not LvResponseStream.DataString.IsEmpty then
-            LvResult := UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).choices[0].Text.Trim);
+          begin
+            if ChatCompletion then
+              LvResult := UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).choices[0].message.content.Trim)
+            else
+              LvResult := UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).choices[0].Text.Trim);
+          end;
         except
           on E: Exception do
             LvResult := '1: ' + E.Message;
         end;
       end
       else
-        LvResult := 'Error Code: ' + LvResponse.StatusText;
+        LvResult := 'Error Code: ' + LvResponse.StatusCode.ToString;
     finally
       LvParamStream.Free;
     end;
@@ -214,29 +224,25 @@ begin
   end;
   LvResponseStream.Free;
   FreeAndNil(LvHttpClient);
+  LvChatRequestJSON.Free;
   LvRequestJSON.Free;
   LvChatGPTResponse.Free;
 
   Result := LvResult;
 end;
-
-
 { TChatGPTResponse }
-
 constructor TChatGPTResponse.Create;
 begin
   inherited Create;
   FChoices := TObjectList<TChoice>.Create;
   FUsage := Tusage.Create;
 end;
-
 destructor TChatGPTResponse.Destroy;
 begin
   FChoices.Free;
   FUsage.Free;
   inherited;
 end;
-
 { TExecutorTrd }
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
@@ -265,7 +271,6 @@ begin
   end;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
-
 destructor TExecutorTrd.Destroy;
 begin
   FFormattedResponse.Free;
@@ -273,7 +278,6 @@ begin
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 0, 0);
   inherited;
 end;
-
 procedure TExecutorTrd.Execute;
 var
   LvAPI: TOpenAIAPI;
@@ -293,7 +297,6 @@ begin
     try
       if not Terminated then
         LvResult := LvAPI.Query(FModel, FPrompt, FMaxToken, FTemperature).Trim;
-
       if (not Terminated) and (not LvResult.IsEmpty) then
       begin
         if FAnimated then
@@ -325,6 +328,18 @@ begin
   finally
     LvAPI.Free;
   end;
+end;
+{ TChatRequestJSON }
+
+constructor TChatRequestJSON.Create;
+begin
+  inherited Create;
+  FMessages := SA;
+end;
+
+destructor TChatRequestJSON.Destroy;
+begin
+  inherited;
 end;
 
 end.

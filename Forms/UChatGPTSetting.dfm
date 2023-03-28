@@ -3,8 +3,8 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 584
-  ClientWidth = 461
+  ClientHeight = 572
+  ClientWidth = 453
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,38 +19,44 @@ object Frm_Setting: TFrm_Setting
   object pgcSetting: TPageControl
     Left = 0
     Top = 0
-    Width = 461
-    Height = 538
+    Width = 453
+    Height = 526
     ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
+    ExplicitWidth = 445
+    ExplicitHeight = 514
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
       object pnl1: TPanel
         Left = 0
         Top = 0
-        Width = 453
-        Height = 508
+        Width = 445
+        Height = 496
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 437
+        ExplicitHeight = 484
         object grp_OpenAI: TGroupBox
           Left = 1
           Top = 1
-          Width = 451
+          Width = 443
           Height = 184
           Align = alTop
           Caption = 'OpenAI preferences'
           TabOrder = 0
+          ExplicitWidth = 435
           object pnlOpenAI: TPanel
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 441
+            Width = 433
             Height = 159
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
+            ExplicitWidth = 425
             object lbl_1: TLabel
               Left = 30
               Top = 18
@@ -139,11 +145,10 @@ object Frm_Setting: TFrm_Setting
                 'text-ada-001'
                 'gpt-3.5-turbo'
                 'gpt-3.5-turbo-0301'
-                'code-davinci-002'
-                'text-davinci-002'
                 'gpt-4'
+                'gpt-4-0314'
                 'gpt-4-32k'
-                'gpt-4-0314')
+                'gpt-4-32k-0314')
             end
             object chk_AnimatedLetters: TCheckBox
               Left = 234
@@ -161,7 +166,7 @@ object Frm_Setting: TFrm_Setting
               Height = 23
               Alignment = taCenter
               EditLabel.Width = 57
-              EditLabel.Height = 15
+              EditLabel.Height = 23
               EditLabel.Caption = 'Timeout(s)'
               LabelPosition = lpLeft
               LabelSpacing = 5
@@ -174,29 +179,33 @@ object Frm_Setting: TFrm_Setting
         object pnlOther: TPanel
           Left = 1
           Top = 185
-          Width = 451
-          Height = 322
+          Width = 443
+          Height = 310
           Align = alClient
           TabOrder = 1
+          ExplicitWidth = 435
+          ExplicitHeight = 298
           object GroupBox1: TGroupBox
             Left = 1
             Top = 1
-            Width = 449
+            Width = 441
             Height = 96
             Align = alTop
             Caption = 'History'
             TabOrder = 0
+            ExplicitWidth = 433
             object pnlHistory: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 71
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 423
               DesignSize = (
-                439
+                431
                 71)
               object lbl_ColorPicker: TLabel
                 Left = 197
@@ -208,7 +217,7 @@ object Frm_Setting: TFrm_Setting
               object chk_History: TCheckBox
                 Left = 20
                 Top = 16
-                Width = 55
+                Width = 39
                 Height = 17
                 Anchors = [akLeft, akTop, akRight]
                 BiDiMode = bdLeftToRight
@@ -216,6 +225,7 @@ object Frm_Setting: TFrm_Setting
                 ParentBiDiMode = False
                 TabOrder = 0
                 OnClick = chk_HistoryClick
+                ExplicitWidth = 31
               end
               object lbEdt_History: TLabeledEdit
                 Left = 79
@@ -223,9 +233,8 @@ object Frm_Setting: TFrm_Setting
                 Width = 318
                 Height = 23
                 EditLabel.Width = 55
-                EditLabel.Height = 15
+                EditLabel.Height = 23
                 EditLabel.Caption = 'Location:  '
-                EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 1
                 Text = ''
@@ -260,29 +269,30 @@ object Frm_Setting: TFrm_Setting
           object grp_Proxy: TGroupBox
             Left = 1
             Top = 164
-            Width = 449
+            Width = 441
             Height = 157
             Align = alTop
             Caption = 'Proxy Setting'
             TabOrder = 1
+            ExplicitWidth = 433
             object pnlProxy: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 132
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 423
               object lbEdt_ProxyHost: TLabeledEdit
                 Left = 71
                 Top = 11
                 Width = 318
                 Height = 23
                 EditLabel.Width = 28
-                EditLabel.Height = 15
+                EditLabel.Height = 23
                 EditLabel.Caption = 'Host:'
-                EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 0
                 Text = ''
@@ -294,9 +304,8 @@ object Frm_Setting: TFrm_Setting
                 Width = 66
                 Height = 23
                 EditLabel.Width = 25
-                EditLabel.Height = 15
+                EditLabel.Height = 23
                 EditLabel.Caption = 'Port:'
-                EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 NumbersOnly = True
                 TabOrder = 1
@@ -318,9 +327,8 @@ object Frm_Setting: TFrm_Setting
                 Width = 138
                 Height = 23
                 EditLabel.Width = 58
-                EditLabel.Height = 15
+                EditLabel.Height = 23
                 EditLabel.Caption = 'UserName:'
-                EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 3
                 Text = ''
@@ -332,9 +340,8 @@ object Frm_Setting: TFrm_Setting
                 Width = 138
                 Height = 23
                 EditLabel.Width = 53
-                EditLabel.Height = 15
+                EditLabel.Height = 23
                 EditLabel.Caption = 'Password:'
-                EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 4
                 Text = ''
@@ -345,20 +352,22 @@ object Frm_Setting: TFrm_Setting
           object grp_Other: TGroupBox
             Left = 1
             Top = 97
-            Width = 449
+            Width = 441
             Height = 67
             Align = alTop
             Caption = 'IDE && Other'
             TabOrder = 2
+            ExplicitWidth = 433
             object pnlIDE: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 42
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 423
               object lbl_6: TLabel
                 Left = 271
                 Top = 17
@@ -416,15 +425,15 @@ object Frm_Setting: TFrm_Setting
         AlignWithMargins = True
         Left = 3
         Top = 50
-        Width = 447
-        Height = 455
+        Width = 439
+        Height = 443
         Margins.Top = 50
         Align = alClient
         TabOrder = 1
         object GridPanelPredefinedQs: TGridPanel
           Left = 0
           Top = 0
-          Width = 443
+          Width = 435
           Height = 0
           Align = alTop
           ColumnCollection = <
@@ -459,7 +468,7 @@ object Frm_Setting: TFrm_Setting
         AlignWithMargins = True
         Left = 3
         Top = 3
-        Width = 447
+        Width = 439
         Height = 126
         Align = alTop
         Caption = 'Writesonic'
@@ -468,7 +477,7 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 5
           Top = 20
-          Width = 437
+          Width = 429
           Height = 101
           Align = alClient
           BevelOuter = bvLowered
@@ -488,7 +497,7 @@ object Frm_Setting: TFrm_Setting
             Width = 330
             Height = 23
             EditLabel.Width = 43
-            EditLabel.Height = 15
+            EditLabel.Height = 23
             EditLabel.Caption = 'API Key:'
             LabelPosition = lpLeft
             LabelSpacing = 5
@@ -502,7 +511,7 @@ object Frm_Setting: TFrm_Setting
             Width = 330
             Height = 23
             EditLabel.Width = 51
-            EditLabel.Height = 15
+            EditLabel.Height = 23
             EditLabel.Caption = 'Base URL:'
             LabelPosition = lpLeft
             LabelSpacing = 5
@@ -515,17 +524,19 @@ object Frm_Setting: TFrm_Setting
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 538
-    Width = 461
+    Top = 526
+    Width = 453
     Height = 46
     Align = alBottom
     BevelOuter = bvLowered
     TabOrder = 1
+    ExplicitTop = 514
+    ExplicitWidth = 445
     DesignSize = (
-      461
+      453
       46)
     object Btn_Default: TButton
-      Left = 275
+      Left = 235
       Top = 10
       Width = 89
       Height = 28
@@ -533,9 +544,10 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Load Defaults'
       TabOrder = 0
       OnClick = Btn_DefaultClick
+      ExplicitLeft = 227
     end
     object Btn_Save: TButton
-      Left = 366
+      Left = 326
       Top = 10
       Width = 89
       Height = 28
@@ -543,6 +555,7 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Save && Close'
       TabOrder = 1
       OnClick = Btn_SaveClick
+      ExplicitLeft = 318
     end
   end
 end

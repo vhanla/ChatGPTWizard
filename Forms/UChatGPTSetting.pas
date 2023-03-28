@@ -693,6 +693,10 @@ end;
 procedure TFrm_Setting.cbbModelChange(Sender: TObject);
 begin
   HasChanges := True;
+  if Pos('gpt-', cbbModel.Text) = 1 then
+    edt_Url.Text := DefaultChatGPT4URL
+  else
+    edt_Url.Text := DefaultChatGPTURL;
 end;
 
 procedure TFrm_Setting.chk_AnimatedLettersClick(Sender: TObject);
